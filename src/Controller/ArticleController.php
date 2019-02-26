@@ -37,12 +37,16 @@ class ArticleController extends AbstractController
         $article = $this->getDoctrine()
                         ->getRepository(Article::class)
                         ->find($id);
- 
-        $data = $this->serializeArticle($article);
-
-        $response =  new Response(json_encode($data));
-        $response->headers->set('Content-Type', 'application/json');
-        return new JsonResponse($data);        
+        if($article){
+                $data = $this->serializeArticle($article);
+                $response =  new Response(json_encode($data));
+                $response->headers->set('Content-Type', 'application/json');
+                return new JsonResponse($data);  
+        }else{
+            return  $this->json([
+                'message' => 'article not found',
+            ]);
+        }
     }
 
     /**
@@ -78,16 +82,6 @@ class ArticleController extends AbstractController
         $form = $this->createForm(ArticleType::class, $article);
         $form->submit($data);
 
-        if (false === $form->isValid()) {
-            return new JsonResponse(
-                [
-                    'status' => 'error',
-                    'errors' => $this->formErrorSerializer->convertFormToArray($form),
-                ],
-                JsonResponse::HTTP_BAD_REQUEST
-            );
-        }
-
         $em = $this->getDoctrine()->getManager();
         $em->persist($article);
         $em->flush();
@@ -116,15 +110,6 @@ class ArticleController extends AbstractController
                 $form = $this->createForm(ArticleType::class, $newArticle);
                 $form->submit($data);
 
-                if (false === $form->isValid()) {
-                    return new JsonResponse(
-                        [
-                            'status' => 'error',
-                            'errors' => $this->formErrorSerializer->convertFormToArray($form),
-                        ],
-                        JsonResponse::HTTP_BAD_REQUEST
-                    );
-                }
 
                 $article->setTitle($newArticle->getTitle());
                 $article->setContent($newArticle->getContent());
