@@ -29,7 +29,7 @@ class Article
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Author")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true)
      */
     private $author;
 
@@ -42,6 +42,11 @@ class Article
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $createdAt;
+
+    public function setId(int $id): self
+    {   $this->id =$id;
+        return $this;
+    }
 
     public function getId(): ?int
     {

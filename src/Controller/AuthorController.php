@@ -32,9 +32,8 @@ class AuthorController extends AbstractController
     public function show($id)
     {    
         $author = $this->getDoctrine()
-        ->getRepository(Author::class)
-        ->find($id);
-
+                        ->getRepository(Author::class)
+                        ->find($id);
         $data = $this->serializeAuthor($author);
 
         $response =  new Response(json_encode($data));
@@ -49,7 +48,6 @@ class AuthorController extends AbstractController
         $authors = $authorRepository->findAll();
 
         $data = ['authors' => []];
-
         foreach($authors as $author){
             $data['authors'][] = $this->serializeAuthor($author);
         }
@@ -67,11 +65,20 @@ class AuthorController extends AbstractController
     {
             //creating of the validation form for post method
             $body = $request->getContent();
-            $data = json_decode($body, true);
+            $data = json_decode($body, true); 
 
             $author = new Author();
             $form = $this->createForm(AuthorType::class, $author);
             $form->submit($data);
+            if (false === $form->isValid()) {
+                return new JsonResponse(
+                    [
+                        'status' => 'error',
+                        'errors' => $this->formErrorSerializer->convertFormToArray($form),
+                    ],
+                    JsonResponse::HTTP_BAD_REQUEST
+                );
+            }
 
             $em = $this->getDoctrine()->getManager();
             $em->persist($author);
@@ -90,8 +97,8 @@ class AuthorController extends AbstractController
 	 */
     public function deleteAction($id){
         $author = $this->getDoctrine()
-        ->getRepository(Author::class)
-        ->find($id);
+                        ->getRepository(Author::class)
+                        ->find($id);
 
         $data = $this->serializeAuthor($author);
 
@@ -99,7 +106,6 @@ class AuthorController extends AbstractController
         $em->remove($author);
         $em->flush();
 
-        $response =  new Response(json_encode($data), 201);
         return $this->json([
             'message' => 'deleted very well!',
         ]);
