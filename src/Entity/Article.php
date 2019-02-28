@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bundle\FrameworkBundle\Tests\Fixtures\Serialization\Author;
+use App\Entity\Author;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ArticleRepository")
@@ -77,6 +77,10 @@ class Article
         return $this;
     }
 
+    public function getAuthor(): Author
+    {
+        return $this->author;
+    }
    
     public function setAuthor($author): self
     {

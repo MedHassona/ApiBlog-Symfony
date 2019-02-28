@@ -36,8 +36,6 @@ class AuthorController extends AbstractController
                         ->find($id);
         $data = $this->serializeAuthor($author);
 
-        $response =  new Response(json_encode($data));
-        $response->headers->set('Content-Type', 'application/json');
         return new JsonResponse($data);        
     }
 
@@ -52,9 +50,6 @@ class AuthorController extends AbstractController
             $data['authors'][] = $this->serializeAuthor($author);
         }
 
-        $response =  new Response(json_encode($data));
-        $response->headers->set('Content-Type', 'application/json');
-        $response->headers->set('Access-Control-Allow-Origin', '*');
         return new JsonResponse($data);
     }
 
@@ -63,33 +58,29 @@ class AuthorController extends AbstractController
 	 */
     public function newAction(Request $request)
     {
-            //creating of the validation form for post method
-            $body = $request->getContent();
-            $data = json_decode($body, true); 
+        $body = $request->getContent();
+        $data = json_decode($body, true); 
 
-            $author = new Author();
-            $form = $this->createForm(AuthorType::class, $author);
-            $form->submit($data);
-            if (false === $form->isValid()) {
-                return new JsonResponse(
-                    [
-                        'status' => 'error',
-                        'errors' => $this->formErrorSerializer->convertFormToArray($form),
-                    ],
-                    JsonResponse::HTTP_BAD_REQUEST
-                );
-            }
+        $author = new Author();
+        $form = $this->createForm(AuthorType::class, $author);
+        $form->submit($data);
+        if (false === $form->isValid()) {
+            return new JsonResponse(
+                [
+                    'status' => 'error',
+                    'errors' => $this->formErrorSerializer->convertFormToArray($form),
+                ],
+                JsonResponse::HTTP_BAD_REQUEST
+            );
+        }
 
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($author);
-            $em->flush();
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($author);
+        $em->flush();
 
-            $data = $this->serializeAuthor($author);
-            $response =  new Response(json_encode($data), 201);
-            return $this->json([
-                'message' => 'registered very well!',
-            ]);
-            
+        return $this->json([
+            'message' => 'registered very well!',
+        ]);
     }
 
     /**
@@ -118,5 +109,4 @@ class AuthorController extends AbstractController
             'biography' => $author->getBiography(),
         ];
     }
-
 }

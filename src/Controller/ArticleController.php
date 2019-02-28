@@ -11,13 +11,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-
 class ArticleController extends AbstractController
 {
-
     /**
      * @Route("/article", name="article")
      */
@@ -39,8 +34,6 @@ class ArticleController extends AbstractController
                         ->find($id);
         if($article){
                 $data = $this->serializeArticle($article);
-                $response =  new Response(json_encode($data));
-                $response->headers->set('Content-Type', 'application/json');
                 return new JsonResponse($data);  
         }else{
             return  $this->json([
@@ -53,13 +46,11 @@ class ArticleController extends AbstractController
      * @Route("/articles", name="articles_list", methods="GET")
      */
     public function listAction(ArticleRepository $articleRepository){
-        $encoders = [new JsonEncoder()];
-        $normalizers = [new ObjectNormalizer()];
-        $serializer = new Serializer($normalizers, $encoders);
 
-        $articles = $articleRepository->findAll();
+        $articles = $this->getDoctrine()
+                         ->getRepository(Article::class)
+                         ->findAll();
 
-        //$data = $serializer->serialize($articles, 'json');
         $data = ['posts' => []];
         foreach($articles as $art){
             $data['posts'][] = $this->serializeArticle($art);
@@ -67,7 +58,6 @@ class ArticleController extends AbstractController
         $response =  new Response(json_encode($data));
         $response->headers->set('Content-Type', 'application/json');
         return new JsonResponse($data);
-
     }
 
     /**
@@ -89,7 +79,6 @@ class ArticleController extends AbstractController
         return  $this->json([
             'message' => 'enrigestered very well!',
         ]);
-
     }
 
     /**
@@ -110,12 +99,9 @@ class ArticleController extends AbstractController
                 $form = $this->createForm(ArticleType::class, $newArticle);
                 $form->submit($data);
 
-
                 $article->setTitle($newArticle->getTitle());
                 $article->setContent($newArticle->getContent());
                 $article->setLoveIts($newArticle->getLoveIts());
-
-                
             }
             else{
                 $article->setLoveIts($lv);
@@ -132,7 +118,6 @@ class ArticleController extends AbstractController
         else{
                  return new Response(json_encode([ 'message' => 'article not found',]), 404);
         }
-
     }
 
     /**
